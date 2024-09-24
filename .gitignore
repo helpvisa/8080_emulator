@@ -1,0 +1,17 @@
+# various ancillary swap + project files
+*.swp
+*.vscode
+*.o
+*.geany
+*test*
+
+# folders
+__testing__/
+build/
+.vscode/
+
+# binaries and untracked dependencies
+disassemble
+*.exe
+*.dll
+*.zip
