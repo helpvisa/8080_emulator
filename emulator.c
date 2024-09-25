@@ -1,4 +1,5 @@
 #include "structs.h"
+#include "disassembler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -9,6 +10,44 @@ void emulate(State *state);
 
 
 int main(int argc, char *argv[]) {
+  char *filename = NULL;
+  FILE *fptr;
+  // load file
+  if (argc > 1) {
+    filename = argv[1];
+  } else {
+    printf("You need to specify a file.\n");
+    return 1;
+  }
+  fptr = fopen(filename, "rb");
+  if (fptr == NULL) {
+    printf("File does not exist or could not be opened.");
+    return 1;
+  }
+  // determine file size and allocate buffer
+  fseek(fptr, 0L, SEEK_END);
+  int fsize = ftell(fptr);
+  fseek(fptr, 0L, SEEK_SET);
+  uint8_t *code_buffer = malloc(fsize * sizeof(unsigned char));
+  fread(code_buffer, fsize, 1, fptr);
+  // close the file; we have read it and are done with it
+  fclose(fptr);
+
+  // initialize emulator
+  struct ConditionCodes conditionals = {0,0,0,0,0,0};
+  struct State machine_state = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0000, 0x0000,
+    code_buffer, conditionals,
+    0x00
+  };
+
+  // run emulator
+  while (1) {
+    emulate(&machine_state);
+  }
+
+  // free memory and exit
+  free(code_buffer);
   return 0;
 }
 
@@ -31,6 +70,8 @@ uint8_t parity(int n, int bits) {
 
 void emulate(State *state) {
   unsigned char *opcode = &state->memory[state->pc];
+  // print out the current instruction
+  disassemble(state->memory, state->pc);
 
   switch (*opcode) {
     case 0x00: break; //NOP
@@ -384,12 +425,14 @@ void emulate(State *state) {
     case 0xc2: { // JNZ adr
       if (0 == state->cc.z) {
         state->pc = (opcode[2] << 8) | (opcode[1]);
+        state->pc -= 1;
       } else {
         state->pc += 2;
       }
     } break;
     case 0xc3: { // JMP adr
       state->pc = (opcode[2] << 8) | (opcode[1]);
+      state->pc -= 1; // decrement since we know we add at the end of the switch case
     } break;
     case 0xc4: unimplemented_instruction(state); break;
     case 0xc5: unimplemented_instruction(state); break;
@@ -421,6 +464,7 @@ void emulate(State *state) {
       state->sp = state->sp - 2;
       // and jump to next address
       state->pc = (opcode[2] << 8) | (opcode[1]);
+      state->pc -= 1;
     } break;
     case 0xce: unimplemented_instruction(state); break;
     case 0xcf: unimplemented_instruction(state); break;
@@ -489,5 +533,14 @@ void emulate(State *state) {
     case 0xff: unimplemented_instruction(state); break;
   }
 
+  // increment memory pointer
   state->pc += 1;
+
+  // print cpu state
+  printf("\tC=%d, P=%d, S=%d, Z=%d\n", state->cc.cy, state->cc.p, state->cc.s, state->cc.z);
+  printf(
+    "\tA $%02x\tB $%02x\tC $%02x\tD $%02x\tE $%02x\tH $%02x\tL $%02x\tSP %04x\n",
+    state->a, state->b, state->c, state->d, state->e, state->h, state->l, state->sp
+  );
+  printf("Memory Pointer (PC) location: %04x\n", state->pc);
 }

@@ -6,13 +6,15 @@ LDFLAGS =
 CFLAGS =
 PREFIX = /usr/local
 
-main: emulator.o
-	$(CC) -Wall $(LDFLAGS) -o 8080em emulator.o $(LDLIBS)
-emulator.o: emulator.c structs.h
+all: disassembler.o emulator.o
+	$(CC) -Wall $(LDFLAGS) -o 8080em emulator.o disassembler.o $(LDLIBS)
+emulator.o: emulator.c structs.h disassembler.h
 
-dis: disassembler.o
-	$(CC) -Wall $(LDFLAGS) -o 8080dis disassembler.o $(LDLIBS)
-disassembler.o: disassembler.c
+
+dis: standalone_disassembler.o
+	$(CC) -Wall $(LDFLAGS) -o 8080dis standalone_disassembler.o $(LDLIBS)
+standalone_disassembler.o: standalone_disassembler.c disassembler.h
+disassembler.o: disassembler.c disassembler.h
 
 clean:
 	rm -f 8080em 8080dis disassembler.o emulator.o
