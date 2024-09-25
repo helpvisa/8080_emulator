@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   // disassemble our code!
   int pc = 0;
   while (pc < fsize) {
-    pc += disassemble(buffer, pc);
+    pc += disassemble(buffer, pc, 0);
   }
 
   free(buffer);

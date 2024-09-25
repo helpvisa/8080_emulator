@@ -1,9 +1,13 @@
 #include <stdio.h>
 
-int disassemble(unsigned char *codebuffer, int pc) {
+int disassemble(unsigned char *codebuffer, int pc, int col_output) {
   unsigned char *code = &codebuffer[pc];
   int opbytes = 1;
-  printf("%04x ", pc);
+  if (col_output) {
+    printf("\e[31m%04x \e[32m", pc);
+  } else {
+    printf("%04x ", pc);
+  }
   switch (*code) {
     case 0x00: printf("NOP"); break;
     case 0x01: printf("LXI    B,#$%02x%02x", code[2], code[1]); opbytes=3; break;
@@ -262,6 +266,10 @@ int disassemble(unsigned char *codebuffer, int pc) {
     case 0xfe: printf("CPI    #$%02x", code[1]); opbytes=2; break;
     case 0xff: printf("RST    7"); break;
   }
-  printf("\n");
+  if (col_output) {
+    printf("\e[0m\n");
+  } else {
+    printf("\n");
+  }
   return opbytes;
 }
