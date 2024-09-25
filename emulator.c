@@ -10,6 +10,9 @@
 /* #include <windows.h> */
 /* #define usleep(double time) Sleep(time / 1000) */
 /* #else */
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #define clrscr() printf("\e[1;1H\e[2J")
 /* #endif */
@@ -91,11 +94,24 @@ int main(int argc, char *argv[]) {
     0x00
   };
 
+  // setup fifo for dumping data about CPU state
+  char *fifo = "/tmp/8080fifo";
+  int fifo_fd;
+  if (use_socket) {
+    mkfifo(fifo, 0666);
+  }
+
   // run emulator
   while (1) {
     clrscr();
     emulate(&machine_state);
     /* getchar(); */
+    if (use_socket) {
+      // open fifo for write-only
+      fifo_fd = open(fifo, O_WRONLY | O_NONBLOCK);
+      write(fifo_fd, memory_buffer, 65535);
+      close(fifo_fd);
+    }
     usleep(clockrate * 1000);
   }
 
