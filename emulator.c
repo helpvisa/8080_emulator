@@ -1272,7 +1272,10 @@ void emulate(State *state) {
       state->a = answer & 0xff;
       state->pc += 1;
     } break;
-    case 0xc7: unimplemented_instruction(state); break;
+    case 0xc7: { // RST 0
+      uint8_t adr[3] = {0x00, 0x00, 0x00};
+      CALL(state, adr);
+    } break;
     case 0xc8: { // RZ
       // if zero, RET
       if (state->cc.z) {
@@ -1293,13 +1296,30 @@ void emulate(State *state) {
         state->pc -= 1;
       }
     } break;
-    case 0xcb: unimplemented_instruction(state); break;
-    case 0xcc: unimplemented_instruction(state); break;
+    case 0xcb: break; // NOP
+    case 0xcc: { // CZ adr
+      if (state->cc.z) {
+        CALL(state, opcode);
+      } else {
+        state->pc += 2;
+      }
+    } break;
     case 0xcd: // CALL adr
       CALL(state, opcode);
       break;
-    case 0xce: unimplemented_instruction(state); break;
-    case 0xcf: unimplemented_instruction(state); break;
+    case 0xce: { // ACI D8
+      uint16_t answer = (uint16_t)state->a + (uint16_t)opcode[1] + (uint16_t)state->cc.cy;
+      state->cc.z = ((answer & 0xff) == 0);
+      state->cc.s = ((answer & 0x80) != 0);
+      state->cc.cy = (answer > 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
+      state->a = answer;
+      state->pc++;
+    } break;
+    case 0xcf: { // RST 1
+      uint8_t adr[3] = {0x00, 0x08, 0x00};
+      CALL(state, adr);
+    } break;
     case 0xd0: { // RNC
       if (0 == state->cc.cy) {
         state->pc = state->memory[state->sp] | (state->memory[state->sp + 1] << 8);
