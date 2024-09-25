@@ -11,8 +11,8 @@ all: disassembler.o emulator.o
 emulator.o: emulator.c structs.h disassembler.h
 
 
-dis: standalone_disassembler.o
-	$(CC) -Wall $(LDFLAGS) -o 8080dis standalone_disassembler.o $(LDLIBS)
+dis: disassembler.o standalone_disassembler.o
+	$(CC) -Wall $(LDFLAGS) -o 8080dis standalone_disassembler.o disassembler.o $(LDLIBS)
 standalone_disassembler.o: standalone_disassembler.c disassembler.h
 disassembler.o: disassembler.c disassembler.h
 
