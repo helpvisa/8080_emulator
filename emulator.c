@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 void unimplemented_instruction(State *state);
-uint8_t parity(uint8_t);
+uint8_t parity(int num, int bits);
 void emulate(State *state);
 
 
@@ -17,6 +17,16 @@ int main(int argc, char *argv[]) {
 void unimplemented_instruction(State *state) {
   printf("Error: instruction not implemented!\n");
   exit(1);
+}
+
+// determines if # of 1s is odd or even
+uint8_t parity(int n, int bits) {
+  uint8_t i = bits / 2;
+  while (i >= 1) {
+    n ^= n >> i;
+    i /= 2;
+  }
+  return (~n) & 1;
 }
 
 void emulate(State *state) {
@@ -193,7 +203,7 @@ void emulate(State *state) {
         state->cc.cy = 0;
       }
       // test parity and set flag appropriately
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       // now store in A
       state->a = answer & 0xff;
     } break;
@@ -202,7 +212,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x82: { // ADD D
@@ -210,7 +220,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x83: { // ADD E
@@ -218,7 +228,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x84: { // ADD H
@@ -226,7 +236,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x85: { // ADD L
@@ -234,7 +244,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x86: { // ADD M
@@ -244,7 +254,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x87: { // ADD A
@@ -252,7 +262,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x88: { // ADC B
@@ -260,7 +270,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x89: { // ADC C
@@ -268,7 +278,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8a: { // ADC D
@@ -276,7 +286,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8b: { // ADC E
@@ -284,7 +294,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8c: { // ADC H
@@ -292,7 +302,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8d: { // ADC L
@@ -300,7 +310,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8e: { // ADC M
@@ -310,7 +320,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x8f: { // ADC A
@@ -318,7 +328,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
     } break;
     case 0x90: unimplemented_instruction(state); break;
@@ -389,7 +399,7 @@ void emulate(State *state) {
       state->cc.z = ((answer & 0xff) == 0);
       state->cc.s = ((answer & 0x80) != 0);
       state->cc.cy = (answer > 0xff);
-      state->cc.p = parity(answer & 0xff);
+      state->cc.p = parity(answer & 0xff, 8);
       state->a = answer & 0xff;
       state->pc += 1;
     } break;
@@ -440,7 +450,7 @@ void emulate(State *state) {
       uint8_t x = state->a & opcode[1];
       state->cc.z = (x == 0);
       state->cc.s = (0x80 == (x & 0x80));
-      state->cc.p = parity(x);
+      state->cc.p = parity(x, 8);
       state->cc.cy = 0; // ANI clears CY
       state->a = x;
       state->pc++; // we used next byte, so increment
@@ -472,7 +482,7 @@ void emulate(State *state) {
       uint8_t x = state->a - opcode[1];
       state->cc.z = (x == 0);
       state->cc.s = (0x80 == (x & 0x80));
-      state->cc.p = parity(x);
+      state->cc.p = parity(x, 8);
       state->cc.cy = (state-> a < opcode[1]);
       state->pc++; // increment extra because we used next byte
     } break;
