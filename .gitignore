@@ -11,7 +11,8 @@ build/
 .vscode/
 
 # binaries and untracked dependencies
-disassemble
+8080dis
+8080em
 *.exe
 *.dll
 *.zip
