@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
 #define clrscr() printf("\e[1;1H\e[2J")
 /* #endif */
 
@@ -21,6 +22,23 @@
  * state->cc.ac will never change as such */
 
 // hoist functions
+// timing funcs
+uint64_t millis() {
+  struct timespec now;
+  timespec_get(&now, TIME_UTC);
+  return ((uint64_t)now.tv_sec * 1000) + ((uint64_t)now.tv_nsec / 1000000);
+}
+uint64_t micros() {
+  struct timespec now;
+  timespec_get(&now, TIME_UTC);
+  return ((uint64_t)now.tv_sec * 1000000) + ((uint64_t)now.tv_nsec / 1000);
+}
+uint64_t nanos() {
+  struct timespec now;
+  timespec_get(&now, TIME_UTC);
+  return ((uint64_t)now.tv_sec * 10000000000) + (uint64_t)now.tv_nsec;
+}
+// emulator funcs
 void unimplemented_instruction(State *state);
 uint8_t parity(int num, int bits);
 void emulate(State *state);
@@ -102,17 +120,38 @@ int main(int argc, char *argv[]) {
   }
 
   // run emulator
+  uint64_t start = micros();
+  uint64_t last = start;
+  uint64_t current = last;
+  uint64_t cycles_per_frame = 2000000 / 64;
+  uint64_t cycles = 0;
   while (1) {
-    clrscr();
-    emulate(&machine_state);
-    /* getchar(); */
-    if (use_socket) {
-      // open fifo for write-only
-      fifo_fd = open(fifo, O_WRONLY | O_NONBLOCK);
-      write(fifo_fd, memory_buffer, 65535);
-      close(fifo_fd);
+    current = micros();
+    uint64_t time_elapsed = current - last;
+    if (time_elapsed > 15625) { // 64fps refresh (creates even # of cycles per frame)
+      last = current;
+      // assume each instruction only takes 1 cycle for now...
+      for (int todo = 0; todo < cycles_per_frame; todo++) {
+        emulate(&machine_state);
+        cycles++;
+        // return to top of print block and overwrite
+        if (output) {
+          printf("number of cycles: %lu\n", cycles);
+          printf("\e[A\e[A\e[A\e[A");
+          printf("\r");
+        }
+      }
+      if (use_socket) {
+        // open fifo for write-only
+        fifo_fd = open(fifo, O_WRONLY | O_NONBLOCK);
+        write(fifo_fd, memory_buffer, 65535);
+        close(fifo_fd);
+      }
     }
-    usleep(clockrate * 1000);
+    if (current - start > 1000000) {
+      printf("number of cycles: %lu\n", cycles);
+      return 0;
+    }
   }
 
   // free memory and exit
