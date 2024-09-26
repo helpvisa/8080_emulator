@@ -148,10 +148,6 @@ int main(int argc, char *argv[]) {
         close(fifo_fd);
       }
     }
-    if (current - start > 1000000) {
-      printf("number of cycles: %lu\n", cycles);
-      return 0;
-    }
   }
 
   // free memory and exit
