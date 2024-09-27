@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
 
   // initialize emulator
   // create a 64kb memory buffer, zero it, and copy the rom into it
-  uint8_t *memory_buffer = malloc(65535 * sizeof(uint8_t));
-  for (int i = 0; i < 65535; i++) {
+  uint8_t *memory_buffer = malloc(65536 * sizeof(uint8_t));
+  for (int i = 0; i < 65536; i++) {
     memory_buffer[i] = 0x00;
   }
 /* #ifdef CPUDIAG */
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
       if (use_socket) {
         // open fifo for write-only
         fifo_fd = open(fifo, O_WRONLY | O_NONBLOCK);
-        write(fifo_fd, memory_buffer, 65535);
+        write(fifo_fd, memory_buffer, 65536);
         close(fifo_fd);
       }
     }
