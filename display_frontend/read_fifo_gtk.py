@@ -12,11 +12,15 @@ FIFO_IN__PATH = "/tmp/8080fifo_in" # for sending data back
 
 # fifo funcs
 def get_memory_from_fifo():
-    buffer = [0]
-    with open(FIFO_MEM__PATH, "rb") as fifo_mem:
-        data = fifo_mem.read()
-        buffer = np.frombuffer(data, dtype=np.uint8)
+    buffer = np.empty(0, dtype=np.uint8)
+    try:
+        with open(FIFO_MEM__PATH, "rb") as fifo_mem:
+            data = fifo_mem.read()
+            buffer = np.frombuffer(data, dtype=np.uint8)
+    except:
+        print("FIFO_MEM__PATH not found. No fifo?")
     return buffer
+
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -34,12 +38,14 @@ class MainWindow(Gtk.ApplicationWindow):
         self.set_child(self.display)
 
     def on_draw(self, picture):
+        print("Draw refreshed.") # debug how often this is called
         # create buffer to cairo image surface
         buffer = get_memory_from_fifo()
-        bytes = GLib.Bytes(buffer)
-        print(bytes.get_size())
-        tex = Gdk.MemoryTexture.new(256, 256, 20, bytes, 256)
-        picture.set_paintable(tex)
+        if buffer.any():
+            bytes = GLib.Bytes(buffer)
+            print(bytes.get_size())
+            tex = Gdk.MemoryTexture.new(256, 256, 20, bytes, 256)
+            picture.set_paintable(tex)
 
 
 class Frontend8080(Adw.Application):
